@@ -3,12 +3,12 @@ from openai import OpenAI
 
 # 1. Setup Page Configuration
 st.set_page_config(
-    page_title="Custom Claude 4.8 UI",
+    page_title="Custom Claude Interface",
     page_icon="🧠",
     layout="centered"
 )
 
-st.title("Custom Claude 4.8 Interface")
+st.title("Custom Claude Interface")
 st.caption("Powered by Agent Router & Streamlit")
 
 # 2. Securely Fetch the API Key
@@ -53,9 +53,14 @@ if prompt := st.chat_input("Ask Claude something..."):
         try:
             # Send the request to Agent Router
             response = client.chat.completions.create(
-                model="claude-opus-4-8", # The specific Agent Router model ID
+                model="claude-opus-4-8", # Update this if the proxy returns a "Model Not Found" error
                 messages=st.session_state.messages,
             )
+            
+            # 🚨 FIX: Intercept raw string errors returned by the proxy server
+            if isinstance(response, str):
+                message_placeholder.error(f"Agent Router Server Message: {response}")
+                st.stop()
             
             # Extract and display the reply
             reply = response.choices[0].message.content
@@ -65,4 +70,4 @@ if prompt := st.chat_input("Ask Claude something..."):
             st.session_state.messages.append({"role": "assistant", "content": reply})
             
         except Exception as e:
-            st.error(f"Agent Router Connection Error: {e}")
+            st.error(f"Python Execution Error: {e}")
